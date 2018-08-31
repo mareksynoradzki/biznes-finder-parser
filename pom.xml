@@ -50,6 +50,7 @@
                             <goal>repackage</goal>
                         </goals>
                         <configuration>
+                            <finalName>parser</finalName>
                             <classifier>spring-boot</classifier>
                             <mainClass>
                                 com.synoradzki.parser.Main

@@ -1,7 +1,5 @@
 package com.synoradzki.parser;
 
-import de.siegmar.fastcsv.writer.CsvAppender;
-import de.siegmar.fastcsv.writer.CsvWriter;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -10,15 +8,15 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.Date;
 
 public class Main {
 
@@ -30,7 +28,7 @@ public class Main {
         try {
             String basePage = args[0];
             List<CompanyContact> companies = parsePages(basePage);
-            companies = companies.stream().filter(e->Objects.nonNull(e.phone) && !e.phone.isEmpty()).collect(Collectors.toList());
+            companies = companies.stream().filter(e -> Objects.nonNull(e.phone) && !e.phone.isEmpty()).collect(Collectors.toList());
             excel(companies);
         } catch (IOException e) {
             e.printStackTrace();
@@ -57,7 +55,7 @@ public class Main {
     }
 
     private static boolean hasAnyResult(String pageUrl) throws IOException {
-        if(!Jsoup.connect(pageUrl).get().select("#form-recaptcha").isEmpty()){
+        if (!Jsoup.connect(pageUrl).get().select("#form-recaptcha").isEmpty()) {
             System.out.println("Wykryto próbę krazieży danych");
         }
         return !Jsoup.connect(pageUrl).get().select("#companies .company").isEmpty();
@@ -120,7 +118,8 @@ public class Main {
             row.createCell(5).setCellValue(contact.phone);
         }
         try {
-            FileOutputStream outputStream = new FileOutputStream("MyFirstExcel.xlsx");
+            String fileName = new SimpleDateFormat("yyyyy-mm-dd-hh-mm").format(new Date());
+            FileOutputStream outputStream = new FileOutputStream("dane_" + fileName + ".xlsx");
             workbook.write(outputStream);
             workbook.close();
         } catch (FileNotFoundException e) {
