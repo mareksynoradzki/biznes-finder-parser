@@ -20,14 +20,29 @@ import java.util.Date;
 
 public class Main {
 
-    public static void main(String[] args) throws IOException {
-        if (args.length != 1) {
+    public static void main(String[] args) throws Exception {
+        Integer startPage = 1;
+        Integer endPage = Integer.MAX_VALUE;
+        if(args.length>1){
+            startPage = Integer.valueOf(args[1]);
+        }
+        if(args.length>2){
+            endPage = Integer.valueOf(args[2]);
+        }
+
+
+        if (args.length ==0 || args.length>3) {
             System.out.print("Nieodpowiednia liczba atrybutów");
             System.exit(0);
         }
+
+        System.out.println("startPage: " + startPage);
+        System.out.println("endPage: : " + endPage);
+
         try {
             String basePage = args[0];
-            List<CompanyContact> companies = parsePages(basePage);
+//            String basePage = "https://www.biznesfinder.pl/Wrocław;+dolnośląskie";
+            List<CompanyContact> companies = parsePages(basePage, startPage, endPage);
             companies = companies.stream().filter(e -> Objects.nonNull(e.phone) && !e.phone.isEmpty()).collect(Collectors.toList());
             excel(companies);
         } catch (IOException e) {
@@ -36,16 +51,22 @@ public class Main {
     }
 
 
-    private static List<CompanyContact> parsePages(String basePageUrl) throws IOException {
+    private static List<CompanyContact> parsePages(String basePageUrl, Integer startPage, Integer endPage) throws Exception{
         List<CompanyContact> result = new ArrayList<>();
-        result.addAll(parsePage(basePageUrl));
+        if(startPage<2) {
+            result.addAll(parsePage(basePageUrl));
+            System.out.println(basePageUrl);
+        }
         boolean hasNext = true;
-        int currentPageNo = 2;
-        while (hasNext) {
+        int currentPageNo = startPage<2 ? 2:  startPage;
+
+        while (hasNext && currentPageNo<=endPage) {
             String currentPage = basePageUrl + ",p," + currentPageNo;
-            System.out.println("strona " + currentPageNo);
-            if (hasAnyResult(currentPage)) {
-                result.addAll(parsePage(currentPage));
+            System.out.println(currentPage);
+            Document page = Jsoup.connect(currentPage).get();
+            Thread.sleep(500L);
+            if (hasAnyResult(page)) {
+                result.addAll(parsePage(page));
             } else {
                 hasNext = false;
             }
@@ -54,16 +75,19 @@ public class Main {
         return result;
     }
 
-    private static boolean hasAnyResult(String pageUrl) throws IOException {
-        if (!Jsoup.connect(pageUrl).get().select("#form-recaptcha").isEmpty()) {
+    private static boolean hasAnyResult(Document page) {
+        if (!page.select("#form-recaptcha").isEmpty()) {
             System.out.println("Wykryto próbę krazieży danych");
         }
-        return !Jsoup.connect(pageUrl).get().select("#companies .company").isEmpty();
+        return !page.select("#companies .company").isEmpty();
     }
 
     private static List<CompanyContact> parsePage(String pageUrl) throws IOException {
-        Document doc = Jsoup.connect(pageUrl).get();
-        Elements companies = doc.select("#companies .company");
+        return parsePage(Jsoup.connect(pageUrl).get());
+    }
+
+    private static List<CompanyContact> parsePage(Document page) throws IOException {
+        Elements companies = page.select("#companies .company");
 
         List<CompanyContact> result = new ArrayList<>();
         for (Element company : companies) {
@@ -73,7 +97,10 @@ public class Main {
             String buildingNo = printIsExists(company.select(".list-unstyled .company-address .company-address-building"));
             String phone = printIsExists(company.select(".list-unstyled .company-phone meta"), "content");
             String email = printIsExists(company.select(".list-unstyled .company-email meta"), "content");
-            result.add(new CompanyContact(name, phone, email, city, street, buildingNo));
+            String category = printIsExists(company.select(".company-category a"));
+            String pageUrl = printIsExists(company.select(".company-www a"), "href");
+
+            result.add(new CompanyContact(name, phone, email, city, street, buildingNo, category, pageUrl));
         }
         return result;
     }
@@ -106,6 +133,8 @@ public class Main {
         row.createCell(3).setCellValue("Numer bundynku");
         row.createCell(4).setCellValue("email");
         row.createCell(5).setCellValue("telefon");
+        row.createCell(6).setCellValue("kategoria");
+        row.createCell(7).setCellValue("www");
 
 
         for (CompanyContact contact : contacts) {
@@ -116,12 +145,15 @@ public class Main {
             row.createCell(3).setCellValue(contact.buildingNo);
             row.createCell(4).setCellValue(contact.email);
             row.createCell(5).setCellValue(contact.phone);
+            row.createCell(6).setCellValue(contact.category);
+            row.createCell(7).setCellValue(contact.pageUrl);
         }
         try {
-            String fileName = new SimpleDateFormat("yyyyy-mm-dd-hh-mm").format(new Date());
+            String fileName = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss").format(new Date());
             FileOutputStream outputStream = new FileOutputStream("dane_" + fileName + ".xlsx");
             workbook.write(outputStream);
             workbook.close();
+            System.out.println(fileName);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
