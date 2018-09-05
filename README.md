@@ -2,4 +2,12 @@
 
 Przykładowe wywołanie
 
-java -jar H:\biznesfinderparser\target\parser-spring-boot.jar "https://www.biznesfinder.pl/Wrocław;+dolnośląskie,s, Transport"
+1. Pobierze pierwszych 10 stron
+java -jar parser-spring-boot.jar "https://www.biznesfinder.pl/Wrocław;+dolnośląskie" 10
+
+2. Pobierze wszystkie strony
+java -jar parser-spring-boot.jar "https://www.biznesfinder.pl/Wrocław;+dolnośląskie"
+
+3. Pobierze strony z danego zakresu
+java -jar parser-spring-boot.jar "https://www.biznesfinder.pl/Wrocław;+dolnośląskie" 10 12
+
