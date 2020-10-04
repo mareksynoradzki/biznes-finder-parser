@@ -61,7 +61,7 @@ public class Main {
         int currentPageNo = startPage<2 ? 2:  startPage;
 
         while (hasNext && currentPageNo<=endPage) {
-            String currentPage = basePageUrl + ",p," + currentPageNo;
+            String currentPage = basePageUrl + "?page=" + currentPageNo;
             System.out.println(currentPage);
             Document page = Jsoup.connect(currentPage).get();
             Thread.sleep(500L);
@@ -95,8 +95,8 @@ public class Main {
             String city = printIsExists(company.select(".list-unstyled .company-address .company-address-city"));
             String street = printIsExists(company.select(".list-unstyled .company-address .company-address-street"));
             String buildingNo = printIsExists(company.select(".list-unstyled .company-address .company-address-building"));
-            String phone = printIsExists(company.select(".list-unstyled .company-phone meta"), "content");
-            String email = printIsExists(company.select(".list-unstyled .company-email meta"), "content");
+            String phone = printIsExists(company.select(".list-unstyled .company-phone .cursor-pointer"), "data-expanded");
+            String email = printIsExists(company.select(".list-unstyled .company-email a"), "data-expanded");
             String category = printIsExists(company.select(".company-category a"));
             String pageUrl = printIsExists(company.select(".company-www a"), "href");
 
