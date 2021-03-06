@@ -10,7 +10,7 @@ java -version
 
 Wejdź na stronę www.biznesfinder.pl wpisz szukaną frazę, kliknij szukaj a następnie skopiuj adres www.
 3. Odpal w konsoli program z parametrami:
-- adres strony
+- adres strony. Adres strony nie powinienen zawiera parametru page
 - numer strony od której program ma rozpocząć pobieranie danych (parametr opcjonalny)
 - numer strony na której program na zakończyć pobieranie danych (parametr opcjonalny)
 

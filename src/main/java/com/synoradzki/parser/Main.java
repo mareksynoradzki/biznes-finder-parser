@@ -13,25 +13,25 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import java.util.Date;
 
 public class Main {
 
     public static void main(String[] args) throws Exception {
         Integer startPage = 1;
         Integer endPage = Integer.MAX_VALUE;
-        if(args.length>1){
+        if (args.length > 1) {
             startPage = Integer.valueOf(args[1]);
         }
-        if(args.length>2){
+        if (args.length > 2) {
             endPage = Integer.valueOf(args[2]);
         }
 
 
-        if (args.length ==0 || args.length>3) {
+        if (args.length == 0 || args.length > 3) {
             System.out.print("Nieodpowiednia liczba atrybutów");
             System.exit(0);
         }
@@ -51,17 +51,17 @@ public class Main {
     }
 
 
-    private static List<CompanyContact> parsePages(String basePageUrl, Integer startPage, Integer endPage) throws Exception{
+    private static List<CompanyContact> parsePages(String basePageUrl, Integer startPage, Integer endPage) throws Exception {
         List<CompanyContact> result = new ArrayList<>();
-        if(startPage<2) {
+        if (startPage < 2) {
             result.addAll(parsePage(basePageUrl));
             System.out.println(basePageUrl);
         }
         boolean hasNext = true;
-        int currentPageNo = startPage<2 ? 2:  startPage;
+        int currentPageNo = startPage < 2 ? 2 : startPage;
 
-        while (hasNext && currentPageNo<=endPage) {
-            String currentPage = basePageUrl + "?page=" + currentPageNo;
+        while (hasNext && currentPageNo <= endPage) {
+            String currentPage = basePageUrl + (basePageUrl.contains("?") ? "&page=" : "?page=") + currentPageNo;
             System.out.println(currentPage);
             Document page = Jsoup.connect(currentPage).get();
             Thread.sleep(500L);
